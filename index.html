@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#ffffff">
+    <meta http-equiv="Cache-Control" content="no-store">
+    <meta name="google-adsense-account" content="ca-pub-4612053611562290">
+    <title>Cube Jump</title>
+    <meta name="description" content="Cube Jump offline web edition.">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4612053611562290" crossorigin="anonymous"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Margarine&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="app-shell">
+        <div id="game-wrapper">
+            <div class="circuit-bg" aria-hidden="true"></div>
+            <canvas id="gameCanvas"></canvas>
+            <div class="scene-vignette"></div>
+
+            <section id="startScreen" class="screen home-screen">
+                <button id="langToggleBtn" class="home-lang-btn" type="button" aria-label="Chuyển ngôn ngữ">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M7 7h9.2l-2.8-2.8L14.8 3 20 8.2l-5.2 5.1-1.4-1.4L16.2 9H7Zm10 8H7.8l2.8 2.8-1.4 1.4L4 14.8l5.2-5.1 1.4 1.4L7.8 13H17Z"></path>
+                    </svg>
+                    <span id="langToggleLabel">EN</span>
+                </button>
+                <button id="helpBtn" class="home-help-btn" type="button" aria-label="Cách chơi">?</button>
+                <div id="helpPanel" class="help-panel hidden" role="dialog" aria-modal="false" aria-labelledby="helpPanelTitle">
+                    <h2 id="helpPanelTitle">Cách chơi</h2>
+                    <p id="helpPanelText">Chạm trái hoặc phải để nhảy đúng hướng. Block đã đi qua sẽ rơi; từ bước 5, đứng quá lâu làm block hiện tại sụp. Online bắt đầu rơi khi tất cả người chơi qua bước 10, timer tính theo người đi sau cùng.</p>
+                </div>
+                <div class="home-center">
+                    <h1 class="game-title-big">Cube Jump</h1>
+                    <div class="home-actions-wrapper">
+                        <label class="username-field" for="usernameInput">
+                            <span id="usernameLabel" class="username-label">Tên hiển thị</span>
+                            <input id="usernameInput" class="username-input" type="text" maxlength="24" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" placeholder="Nhập tên hiển thị (không bắt buộc)">
+                        </label>
+                        <div class="home-online-actions">
+                            <button id="homeJoinRoomBtn" class="ghost-btn hero-play room-btn" type="button">Nhập code</button>
+                            <button id="playOnlineBtn" class="ghost-btn hero-play room-btn" type="button">
+                                <span id="playOnlineBtnLabel">Tạo phòng</span>
+                            </button>
+                        </div>
+                        <button id="playOfflineBtn" class="play-btn hero-play">Chơi ngay</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="gameOverScreen" class="screen hidden">
+                <div class="gameover-simple">
+                    <button id="menuBtn" class="home-icon-btn" aria-label="Home">
+                        <svg viewBox="0 0 50.6 45.33" aria-hidden="true">
+                            <path fill="currentColor" d="m49.6,23.21L28.14,1.19c-1.56-1.59-4.12-1.59-5.68,0L1,23.21c-2.16,2.22-.59,5.95,2.51,5.95h3.53v14.19c0,1.09.89,1.98,1.97,1.98h8.02c1.09,0,1.97-.89,1.97-1.98v-12.13c0-1.14.93-2.06,2.06-2.06h8.48c1.14,0,2.06.92,2.06,2.06v12.13c0,1.09.88,1.98,1.97,1.98h8.02c1.08,0,1.97-.89,1.97-1.97v-14.2h3.53c3.1,0,4.67-3.73,2.51-5.95Zm-29.57-10.66l-7.54,7.81c-.29.3-.68.45-1.08.45-.37,0-.75-.14-1.04-.42-.59-.57-.61-1.52-.04-2.12l7.54-7.81c.57-.59,1.52-.61,2.12-.04.59.58.61,1.53.04,2.13Zm4-4.13l-.87.86c-.29.29-.67.44-1.06.44s-.76-.15-1.06-.44c-.58-.59-.58-1.53,0-2.12l.87-.87c.59-.58,1.54-.58,2.12,0,.59.59.59,1.54,0,2.13Z"></path>
+                        </svg>
+                    </button>
+                    <div class="gameover-scores">
+                        <div class="gameover-score-main">
+                            <span id="scoreLabel" class="gameover-label">Điểm</span>
+                            <strong id="finalScore" class="gameover-value">0</strong>
+                        </div>
+                        <div class="gameover-score-best">
+                            <span id="bestLabel" class="gameover-label">Kỷ lục</span>
+                            <strong id="bestScore" class="gameover-best-value">0</strong>
+                        </div>
+                    </div>
+                    <div class="gameover-actions">
+                        <div id="gameoverRespawn" class="gameover-respawn hidden">
+                            <p id="continueInfo" class="continue-info hidden">Tiếp tục từ checkpoint</p>
+                            <button id="watchAdBtn" class="ghost-btn compact-play revive-chip hidden" type="button">
+                                <span class="watch-ad-label">Hồi sinh chơi tiếp</span>
+                            </button>
+                        </div>
+                        <button id="playOnlineDeathBtn" class="ghost-btn compact-play room-btn" type="button" aria-label="Create room">
+                            <span id="playOnlineDeathLabel">Tạo phòng</span>
+                        </button>
+                        <button id="retryBtn" class="play-btn compact-play liquid-chip">Chơi lại</button>
+                        <button id="leaveRoomDeathBtn" class="ghost-btn compact-play hidden" type="button">Rời phòng</button>
+                    </div>
+                </div>
+            </section>
+
+            <div id="hud" class="hidden">
+                <button id="hudHomeBtn" class="hud-home-btn" type="button" aria-label="Home">
+                    <svg viewBox="0 0 50.6 45.33" aria-hidden="true">
+                        <path fill="currentColor" d="m49.6,23.21L28.14,1.19c-1.56-1.59-4.12-1.59-5.68,0L1,23.21c-2.16,2.22-.59,5.95,2.51,5.95h3.53v14.19c0,1.09.89,1.98,1.97,1.98h8.02c1.09,0,1.97-.89,1.97-1.98v-12.13c0-1.14.93-2.06,2.06-2.06h8.48c1.14,0,2.06.92,2.06,2.06v12.13c0,1.09.88,1.98,1.97,1.98h8.02c1.08,0,1.97-.89,1.97-1.97v-14.2h3.53c3.1,0,4.67-3.73,2.51-5.95Zm-29.57-10.66l-7.54,7.81c-.29.3-.68.45-1.08.45-.37,0-.75-.14-1.04-.42-.59-.57-.61-1.52-.04-2.12l7.54-7.81c.57-.59,1.52-.61,2.12-.04.59.58.61,1.53.04,2.13Zm4-4.13l-.87.86c-.29.29-.67.44-1.06.44s-.76-.15-1.06-.44c-.58-.59-.58-1.53,0-2.12l.87-.87c.59-.58,1.54-.58,2.12,0,.59.59.59,1.54,0,2.13Z"></path>
+                    </svg>
+                </button>
+                <div id="bestScoreHud" class="best-score-hud">Kỷ lục: 0</div>
+                <div id="scoreHud" class="score-hud">Điểm: 0</div>
+                <div id="roomHud" class="room-hud hidden">
+                    <div class="room-hud-body">
+                        <ul id="roomHudPlayers" class="room-hud-players"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="recordToast" class="record-toast hidden">Kỷ lục mới!</div>
+
+            <div id="touchControls" class="hidden">
+                <button id="leftControlBtn" type="button" aria-label="Nhảy trái"></button>
+                <button id="rightControlBtn" type="button" aria-label="Nhảy phải"></button>
+            </div>
+
+            <section id="roomModal" class="screen room-modal hidden" aria-hidden="true">
+                <div class="room-modal-card">
+                    <div id="roomJoinView" class="room-view room-popup-view hidden" hidden aria-hidden="true">
+                        <div class="room-join-section">
+                            <label class="room-join-label" for="homeJoinRoomCodeInput">Nhập code</label>
+                            <input id="homeJoinRoomCodeInput" class="room-join-input" type="text" maxlength="6" inputmode="text" enterkeyhint="go" lang="en" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" placeholder="Nhập code">
+                            <span id="roomJoinFeedback" class="room-join-feedback"></span>
+                            <button id="joinRoomSubmitBtnMain" class="play-btn room-action-btn" type="button">Vào</button>
+                        </div>
+                    </div>
+
+                    <div id="roomNoticeView" class="room-view room-popup-view hidden" hidden aria-hidden="true">
+                        <div class="room-notice-card">
+                            <p id="roomNoticeText" class="room-notice-text"></p>
+                        </div>
+                    </div>
+
+                    <div id="roomWaitingView" class="room-view room-popup-view">
+                        <div class="room-code-section">
+                            <p id="roomCodeLabel" class="room-code-label-sm">Mã phòng</p>
+                            <div class="room-code-inline">
+                                <strong id="roomCodeValue" class="room-code-big">------</strong>
+                                <button id="copyRoomCodeBtn" class="room-copy-icon-btn" type="button" aria-label="Copy room code">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M9 9h10v11H9z"></path>
+                                        <path d="M5 4h10v3H8v8H5z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <span id="roomCopyStatus" class="room-copy-feedback"></span>
+                        </div>
+
+                        <div class="room-members-section">
+                            <div class="room-members-header">
+                                <span id="roomPlayerCount" class="room-members-count-text">Players 0/6</span>
+                            </div>
+                            <ul id="roomPlayerList" class="room-members-list"></ul>
+                        </div>
+
+                        <div class="room-actions-row">
+                            <p id="roomStartHint" class="room-start-hint"></p>
+                            <button id="roomBackBtn" class="room-head-btn room-exit-btn" type="button" aria-label="Leave room">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M10.8 4.8a1 1 0 0 1 1.4 1.4L8.4 10H17a1 1 0 1 1 0 2H8.4l3.8 3.8a1 1 0 0 1-1.4 1.4l-5.5-5.5a1 1 0 0 1 0-1.4Z"></path>
+                                </svg>
+                            </button>
+                            <button id="playNowBtn" class="play-btn room-action-btn" type="button">Bắt đầu</button>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <section id="systemPopup" class="system-popup hidden" aria-hidden="true">
+                <div class="system-popup-card" role="alertdialog" aria-modal="true" aria-labelledby="systemPopupTitle">
+                    <div class="system-popup-copy">
+                        <h2 id="systemPopupTitle" class="system-popup-title">Room Connection</h2>
+                        <p id="systemPopupText" class="system-popup-text"></p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+
+    <script>
+        window.__cubeJumpAdsConfig = {
+            rewardedAdUnitPath: "/YOUR_NETWORK_CODE/cubejump_rewarded",
+            debug: false
+        };
+
+        (function() {
+            const state = {
+                slot: null,
+                rewardGranted: false,
+                onRewarded: null,
+                onDismissed: null,
+                onFailed: null,
+                configured: false,
+                initialized: false
+            };
+
+            function cleanupSlot() {
+                if (!window.googletag || !state.slot) return;
+                try {
+                    window.googletag.destroySlots([state.slot]);
+                } catch (error) {
+                    console.warn("[CubeJumpAds] Failed to destroy rewarded slot", error);
+                }
+                state.slot = null;
+            }
+
+            function resetState() {
+                state.rewardGranted = false;
+                state.onRewarded = null;
+                state.onDismissed = null;
+                state.onFailed = null;
+                cleanupSlot();
+            }
+
+            function fail(error) {
+                const callback = state.onFailed;
+                resetState();
+                callback?.(error instanceof Error ? error : new Error(String(error || "Rewarded ad failed")));
+            }
+
+            window.googletag = window.googletag || {
+                cmd: []
+            };
+
+            function ensureServices() {
+                if (state.initialized) return;
+
+                window.googletag.cmd.push(function() {
+                    if (state.initialized) return;
+                    const pubads = window.googletag.pubads();
+
+                    pubads.addEventListener("rewardedSlotReady", function(event) {
+                        if (event.slot !== state.slot) return;
+                        event.makeRewardedVisible();
+                    });
+
+                    pubads.addEventListener("rewardedSlotGranted", function(event) {
+                        if (event.slot !== state.slot) return;
+                        state.rewardGranted = true;
+                        state.onRewarded?.();
+                    });
+
+                    pubads.addEventListener("rewardedSlotClosed", function(event) {
+                        if (event.slot !== state.slot) return;
+                        const dismissed = !state.rewardGranted;
+                        const onDismissed = state.onDismissed;
+                        resetState();
+                        if (dismissed) onDismissed?.();
+                    });
+
+                    pubads.addEventListener("slotRenderEnded", function(event) {
+                        if (event.slot !== state.slot) return;
+                        if (event.isEmpty) {
+                            fail(new Error("Rewarded ad inventory is empty"));
+                        }
+                    });
+
+                    window.googletag.enableServices();
+                    state.initialized = true;
+                });
+            }
+
+            function isConfigured() {
+                const adUnitPath = window.__cubeJumpAdsConfig?.rewardedAdUnitPath || "";
+                state.configured = !!adUnitPath && !adUnitPath.includes("YOUR_NETWORK_CODE");
+                return state.configured;
+            }
+
+            window.__showRewardedAd = function({
+                onRewarded,
+                onDismissed,
+                onFailed
+            } = {}) {
+                if (!isConfigured()) {
+                    onFailed?.(new Error("Missing rewarded ad unit path. Set window.__cubeJumpAdsConfig.rewardedAdUnitPath in index.html."));
+                    return;
+                }
+
+                if (!window.googletag || !window.googletag.enums?.OutOfPageFormat?.REWARDED) {
+                    onFailed?.(new Error("Google Publisher Tag is not ready or rewarded ads are unsupported on this device/browser."));
+                    return;
+                }
+
+                if (state.slot) {
+                    onFailed?.(new Error("Another rewarded ad is already loading or showing."));
+                    return;
+                }
+
+                ensureServices();
+
+                window.googletag.cmd.push(function() {
+                    const adUnitPath = window.__cubeJumpAdsConfig.rewardedAdUnitPath;
+                    const slot = window.googletag.defineOutOfPageSlot(adUnitPath, window.googletag.enums.OutOfPageFormat.REWARDED);
+
+                    if (!slot) {
+                        onFailed?.(new Error("This page does not support rewarded ads for the current device/browser."));
+                        return;
+                    }
+
+                    state.slot = slot;
+                    state.rewardGranted = false;
+                    state.onRewarded = typeof onRewarded === "function" ? onRewarded : null;
+                    state.onDismissed = typeof onDismissed === "function" ? onDismissed : null;
+                    state.onFailed = typeof onFailed === "function" ? onFailed : null;
+
+                    slot.addService(window.googletag.pubads());
+                    window.googletag.display(slot);
+                });
+            };
+
+            window.__cubeJumpAdsDebug = {
+                resetState
+            };
+        })();
+    </script>
+
+    <script src="game.js"></script>
+
+
+</body>
+
+</html>
